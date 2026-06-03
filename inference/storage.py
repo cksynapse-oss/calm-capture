@@ -119,11 +119,13 @@ class CorteonStorage:
                 timestamp           REAL NOT NULL,
                 source_url          TEXT,
                 title               TEXT,
+                auto_title          TEXT,
                 user_note           TEXT,
                 domain              TEXT,
                 author              TEXT,
                 word_count          INTEGER,
                 content_type        TEXT,
+                epistemic_type      TEXT DEFAULT 'pratyaksa',
                 markdown_path       TEXT,
                 keywords_json       TEXT,
                 entities_json       TEXT,
@@ -181,7 +183,21 @@ class CorteonStorage:
         with self.conn:
             for ddl in ddl_statements:
                 self.conn.execute(ddl)
+        self._migrate_schema()
         logger.info("Tables verified/created.")
+
+    def _migrate_schema(self) -> None:
+        """Safely add new columns to existing tables (idempotent)."""
+        migrations = [
+            ("captures", "auto_title", "TEXT"),
+            ("captures", "epistemic_type", "TEXT DEFAULT 'pratyaksa'"),
+        ]
+        for table, column, col_type in migrations:
+            try:
+                self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
+                logger.info("Migrated: added %s.%s", table, column)
+            except sqlite3.OperationalError:
+                pass  # column already exists
 
     # ------------------------------------------------------------------
     # Captures
@@ -212,8 +228,9 @@ class CorteonStorage:
 
         # Columns that exist in the captures table
         capture_columns = {
-            "capture_id", "timestamp", "source_url", "title", "user_note",
-            "domain", "author", "word_count", "content_type", "markdown_path",
+            "capture_id", "timestamp", "source_url", "title", "auto_title",
+            "user_note", "domain", "author", "word_count", "content_type",
+            "epistemic_type", "markdown_path",
             "keywords_json", "entities_json", "noun_phrases_json", "concepts_json",
             "one_sentence_summary", "prediction_error_score", "semantic_novelty",
             "user_emphasis", "source_reliability", "topic_cluster_id",

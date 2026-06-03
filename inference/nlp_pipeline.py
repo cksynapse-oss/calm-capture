@@ -358,3 +358,117 @@ class Tier1Processor:
         except Exception as exc:  # noqa: BLE001
             logger.error("embed_text failed: %s", exc)
             return None
+
+    # ------------------------------------------------------------------
+    # Auto-title generation (eliminates "Untitled" records)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def generate_auto_title(
+        nlp_result: Dict[str, Any],
+        markdown: str = "",
+        source_url: str = "",
+    ) -> str:
+        """
+        Generate a 2–3 word semantic header when no user-defined title exists.
+
+        Priority chain:
+          1. Named entity of type ORG, PERSON, WORK_OF_ART, EVENT, GPE
+          2. Top-ranked YAKE keyword
+          3. First meaningful noun phrase
+          4. Domain from source URL
+          5. First 4 words of content
+        """
+        # Priority 1: Named entities (most specific)
+        priority_labels = {"ORG", "PERSON", "WORK_OF_ART", "EVENT", "GPE", "PRODUCT", "LAW"}
+        for ent in nlp_result.get("named_entities", []):
+            if ent.get("label") in priority_labels and len(ent.get("text", "")) > 2:
+                words = ent["text"].split()[:3]
+                return " ".join(words).title()
+
+        # Priority 2: Top YAKE keyword
+        keywords = nlp_result.get("keywords_yake", [])
+        if keywords:
+            candidate = keywords[0].strip()
+            if len(candidate) > 2:
+                return candidate.title()[:40]
+
+        # Priority 3: First meaningful noun phrase (>3 chars)
+        for np_text in nlp_result.get("noun_phrases", []):
+            if len(np_text.strip()) > 3:
+                words = np_text.strip().split()[:3]
+                return " ".join(words).title()
+
+        # Priority 4: Domain from source URL
+        if source_url:
+            try:
+                from urllib.parse import urlparse
+                domain = urlparse(source_url).netloc.replace("www.", "")
+                if domain:
+                    return domain.split(".")[0].title() + " Article"
+            except Exception:
+                pass
+
+        # Priority 5: First 4 words of content
+        clean = re.sub(r"[#*_>\-\[\]()]+", " ", markdown).strip()
+        words = clean.split()[:4]
+        if words:
+            return " ".join(words).title()[:40]
+
+        return "Captured Note"
+
+    # ------------------------------------------------------------------
+    # Pramāṇa epistemic classification
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def classify_epistemic_type(
+        source_url: str = "",
+        user_note: str = "",
+        content_type: str = "",
+        has_markdown: bool = False,
+    ) -> str:
+        """
+        Classify a capture into one of four Pramāṇa categories:
+
+        - pratyaksa : raw perception — article DOM extractions, screen OCR
+        - anumana   : user inference — notes/annotations added by the user
+        - sabda     : testimony — external quotes or authoritative text
+        - upamana   : comparison — synthesized relational links
+
+        The classification uses a simple decision tree based on available
+        metadata signals.
+        """
+        note = (user_note or "").strip()
+        url = (source_url or "").strip()
+        ctype = (content_type or "").strip().lower()
+
+        # Screen OCR captures are direct perception
+        if ctype == "screen_ocr":
+            return "pratyaksa"
+
+        # User-typed notes without a source URL are inferences
+        if note and not url and not has_markdown:
+            return "anumana"
+
+        # Explicit content_type markers
+        if ctype in ("quote", "testimony", "citation"):
+            return "sabda"
+        if ctype in ("synthesis", "comparison", "connection"):
+            return "upamana"
+
+        # Scholarly / high-reliability sources → sabda (authoritative testimony)
+        scholarly_markers = {
+            "arxiv.org", "pubmed", "nature.com", "science.org",
+            "nejm.org", "thelancet.com", "doi.org", "scholar.google",
+        }
+        if url and any(marker in url.lower() for marker in scholarly_markers):
+            return "sabda"
+
+        # User note attached to a capture with markdown → user is annotating
+        if note and has_markdown:
+            return "anumana"
+
+        # Default: raw data extraction from browser
+        return "pratyaksa"
+

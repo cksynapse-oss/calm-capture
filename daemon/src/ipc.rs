@@ -64,6 +64,15 @@ pub struct CaptureNote {
     pub user_note: String,
 }
 
+/// Payload carried by the `ScreenCaptureResult` UI→daemon message.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScreenCaptureResultPayload {
+    pub ocr_text: String,
+    pub app_name: String,
+    pub window_title: String,
+    pub timestamp: String,
+}
+
 /// Payload for a new-capture message sent to the inference engine.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CapturePayload {
@@ -75,6 +84,13 @@ pub struct CapturePayload {
     pub excerpt: String,
     pub word_count: u32,
     pub timestamp: String,
+    /// "browser" (default) or "screen_ocr"
+    #[serde(default = "default_content_type")]
+    pub content_type: String,
+}
+
+fn default_content_type() -> String {
+    "browser".to_owned()
 }
 
 impl From<&CaptureResult> for CapturePayload {
@@ -88,6 +104,7 @@ impl From<&CaptureResult> for CapturePayload {
             excerpt: cr.excerpt.clone(),
             word_count: cr.word_count,
             timestamp: cr.timestamp.clone(),
+            content_type: "browser".to_owned(),
         }
     }
 }
@@ -123,6 +140,8 @@ pub enum DaemonToUI {
     CaptureComplete(CaptureComplete),
     Resurface(Resurface),
     Toast(Toast),
+    /// Ask the overlay to perform a native screen capture and OCR
+    ScreenCaptureRequest {},
 }
 
 // ---------------------------------------------------------------------------
@@ -135,6 +154,8 @@ pub enum DaemonToUI {
 pub enum UIToDaemon {
     UserFeedback(UserFeedback),
     CaptureNote(CaptureNote),
+    /// The overlay finished a screen capture + OCR and sends the result back.
+    ScreenCaptureResult(ScreenCaptureResultPayload),
 }
 
 // ---------------------------------------------------------------------------

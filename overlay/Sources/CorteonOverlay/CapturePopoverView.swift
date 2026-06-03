@@ -129,6 +129,11 @@ struct CapturePopoverView: View {
             animateIn()
             scheduleAutoDismiss()
         }
+        .onChange(of: noteFocused) { isFocused in
+            if isFocused {
+                dismissTask?.cancel()
+            }
+        }
     }
 
     // MARK: - Sub-views

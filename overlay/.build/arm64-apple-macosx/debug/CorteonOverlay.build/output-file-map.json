@@ -32,6 +32,12 @@
     "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView~partial.swiftmodule",
     "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swiftdeps"
   },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/ScreenCaptureManager.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/ScreenCaptureManager.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/ScreenCaptureManager.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/ScreenCaptureManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/ScreenCaptureManager.swiftdeps"
+  },
   "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/WebSocketClient.swift": {
     "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.d",
     "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swift.o",

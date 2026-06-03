@@ -5,14 +5,18 @@ use std::{
     collections::HashMap,
     net::SocketAddr,
     path::PathBuf,
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use global_hotkey::{hotkey::HotKey, GlobalHotKeyEvent, GlobalHotKeyManager};
 use ipc::{
-    DaemonToExtension, DaemonToUI, ExtensionMessage, InferenceMessage, Resurface, Toast, UIToDaemon,
+    CapturePayload, DaemonToExtension, DaemonToUI, ExtensionMessage, InferenceMessage, Resurface,
+    Toast, UIToDaemon,
 };
 use storage::Storage;
 use tokio::{
@@ -197,6 +201,7 @@ async fn handle_ws_connection(
 async fn nm_socket_listener(
     ext_tx: tokio::sync::mpsc::Sender<ExtensionMessage>,
     mut daemon_to_ext_rx: tokio::sync::mpsc::Receiver<DaemonToExtension>,
+    nm_host_connected: Arc<AtomicBool>,
 ) -> Result<()> {
     let _ = std::fs::remove_file(UNIX_SOCK);
     let listener = UnixListener::bind(UNIX_SOCK)
@@ -208,6 +213,7 @@ async fn nm_socket_listener(
         match listener.accept().await {
             Ok((mut stream, _addr)) => {
                 info!("NM host connected");
+                nm_host_connected.store(true, Ordering::SeqCst);
                 loop {
                     tokio::select! {
                         frame = read_framed(&mut stream) => {
@@ -220,10 +226,12 @@ async fn nm_socket_listener(
                                 }
                                 Ok(None) => {
                                     info!("NM host disconnected");
+                                    nm_host_connected.store(false, Ordering::SeqCst);
                                     break;
                                 }
                                 Err(e) => {
                                     error!("NM socket read error: {e}");
+                                    nm_host_connected.store(false, Ordering::SeqCst);
                                     break;
                                 }
                             }
@@ -234,6 +242,7 @@ async fn nm_socket_listener(
                                     let json = ipc::to_json(&m);
                                     if let Err(e) = write_framed(&mut stream, &json).await {
                                         error!("NM socket write error: {e}");
+                                        nm_host_connected.store(false, Ordering::SeqCst);
                                         break;
                                     }
                                 }
@@ -285,10 +294,14 @@ async fn run_daemon(
         tokio::sync::mpsc::channel::<InferenceMessage>(64);
     let (ui_in_tx, mut ui_in_rx) = tokio::sync::mpsc::channel::<UIToDaemon>(64);
 
+    // --- NM host connection tracking ---
+    let nm_host_connected = Arc::new(AtomicBool::new(false));
+
     // --- Unix socket (NM host) ---
     {
         let ext_tx_clone = ext_tx.clone();
-        tokio::spawn(nm_socket_listener(ext_tx_clone, daemon_to_ext_rx));
+        let nm_flag = nm_host_connected.clone();
+        tokio::spawn(nm_socket_listener(ext_tx_clone, daemon_to_ext_rx, nm_flag));
     }
 
     // --- WebSocket server ---
@@ -329,8 +342,14 @@ async fn run_daemon(
     loop {
         // Non-blocking poll of the crossbeam hotkey receiver.
         if hotkey_rx.try_recv().is_ok() {
-            info!("Hotkey triggered — sending TriggerCapture to extension");
-            let _ = daemon_to_ext_tx.send(DaemonToExtension::TriggerCapture {}).await;
+            if nm_host_connected.load(Ordering::SeqCst) {
+                info!("Hotkey triggered — sending TriggerCapture to extension");
+                let _ = daemon_to_ext_tx.send(DaemonToExtension::TriggerCapture {}).await;
+            } else {
+                info!("Hotkey triggered — no NM host connected, sending ScreenCaptureRequest to overlay");
+                let scr_msg = DaemonToUI::ScreenCaptureRequest {};
+                send_to_ui(&clients, &ipc::to_json(&scr_msg)).await;
+            }
         }
 
         tokio::select! {
@@ -429,6 +448,40 @@ async fn run_daemon(
                         if let Err(e) = store.update_user_note(&note.capture_id, &note.user_note) {
                             error!("update_user_note error: {e}");
                         }
+                    }
+
+                    UIToDaemon::ScreenCaptureResult(ref scr) => {
+                        info!(
+                            "ScreenCaptureResult received app={} title={}",
+                            scr.app_name, scr.window_title
+                        );
+                        let capture_id = uuid::Uuid::new_v4().to_string();
+                        let word_count = scr.ocr_text.split_whitespace().count() as u32;
+
+                        // Forward to inference engine as a NewCapture with content_type "screen_ocr"
+                        let payload = CapturePayload {
+                            capture_id: capture_id.clone(),
+                            title: scr.window_title.clone(),
+                            source_url: format!("app://{}", scr.app_name),
+                            content_markdown: scr.ocr_text.clone(),
+                            byline: Some(scr.app_name.clone()),
+                            excerpt: scr.ocr_text.chars().take(200).collect(),
+                            word_count,
+                            timestamp: scr.timestamp.clone(),
+                            content_type: "screen_ocr".to_owned(),
+                        };
+                        let inf_msg = InferenceMessage::NewCapture { payload };
+                        send_to_inference(&clients, &ipc::to_json(&inf_msg)).await;
+
+                        // Notify UI with a capture confirmation
+                        let cc = DaemonToUI::CaptureComplete(ipc::CaptureComplete {
+                            capture_id,
+                            title: scr.window_title.clone(),
+                            excerpt: scr.ocr_text.chars().take(120).collect(),
+                            word_count,
+                            prediction_error_score: 0.0,
+                        });
+                        send_to_ui(&clients, &ipc::to_json(&cc)).await;
                     }
                 }
             }

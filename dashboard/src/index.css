@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap');
+
+:root {
+  --bg-color: #0b0c10;
+  --panel-bg: rgba(255, 255, 255, 0.03);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --accent-color: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.4);
+  --novelty-high: #a855f7;
+  --novelty-med: #f59e0b;
+  --novelty-low: #64748b;
+
+  /* Pramāṇa epistemic category colors */
+  --pramana-pratyaksa: #3b82f6;   /* Blue — raw perception (direct experience) */
+  --pramana-anumana: #f59e0b;     /* Amber — inference (user-annotated) */
+  --pramana-sabda: #10b981;       /* Emerald — testimony (authoritative sources) */
+  --pramana-upamana: #a855f7;     /* Purple — analogy/comparison (synthesis) */
+  --pramana-pratyaksa-glow: rgba(59, 130, 246, 0.35);
+  --pramana-anumana-glow: rgba(245, 158, 11, 0.35);
+  --pramana-sabda-glow: rgba(16, 185, 129, 0.35);
+  --pramana-upamana-glow: rgba(168, 85, 247, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
+}
+
+h1, h2, h3, .brand {
+  font-family: 'Outfit', sans-serif;
+}
+
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-right: 1px solid var(--panel-border);
+  background: rgba(11, 12, 16, 0.6);
+  backdrop-filter: blur(20px);
+  z-index: 10;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-color);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* List View */
+.list-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.page-header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.capture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.capture-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.capture-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card-domain {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.card-note {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  background: rgba(0,0,0,0.2);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-color);
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.novelty-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.novelty-high { background: rgba(168, 85, 247, 0.15); color: var(--novelty-high); }
+.novelty-med { background: rgba(245, 158, 11, 0.15); color: var(--novelty-med); }
+.novelty-low { background: rgba(100, 116, 139, 0.15); color: var(--novelty-low); }
+
+/* Graph View */
+.graph-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.graph-overlay {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 16px 32px;
+  display: flex;
+  gap: 32px;
+  pointer-events: none;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Outfit';
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Loading */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  border-top-color: var(--accent-color);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pramāṇa Epistemic Type Badges */
+.pramana-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
+}
+
+.pramana-badge.pratyaksa {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--pramana-pratyaksa);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.pramana-badge.anumana {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--pramana-anumana);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.pramana-badge.sabda {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--pramana-sabda);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.pramana-badge.upamana {
+  background: rgba(168, 85, 247, 0.12);
+  color: var(--pramana-upamana);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+/* Epistemic card borders */
+.capture-card.epistemic-pratyaksa { border-left: 3px solid var(--pramana-pratyaksa); }
+.capture-card.epistemic-anumana   { border-left: 3px solid var(--pramana-anumana); }
+.capture-card.epistemic-sabda     { border-left: 3px solid var(--pramana-sabda); }
+.capture-card.epistemic-upamana   { border-left: 3px solid var(--pramana-upamana); }
+
+/* Graph Legend Panel */
+.graph-legend {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 20;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.graph-legend h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-dot.pratyaksa { background: var(--pramana-pratyaksa); box-shadow: 0 0 6px var(--pramana-pratyaksa-glow); }
+.legend-dot.anumana   { background: var(--pramana-anumana);   box-shadow: 0 0 6px var(--pramana-anumana-glow); }
+.legend-dot.sabda     { background: var(--pramana-sabda);     box-shadow: 0 0 6px var(--pramana-sabda-glow); }
+.legend-dot.upamana   { background: var(--pramana-upamana);   box-shadow: 0 0 6px var(--pramana-upamana-glow); }
+
+/* Graph meta info */
+.graph-meta {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 20;
+  padding: 12px 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.graph-meta .threshold-label {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  color: var(--text-primary);
+}

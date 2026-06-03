@@ -278,6 +278,26 @@ class InferenceEngine:
         reliability = self.nlp.source_reliability(domain)
         emphasis = self.nlp.user_emphasis(user_note)
 
+        # ---- Auto-title generation (eliminates "Untitled" records) ----
+        title = capture.get("title", "")
+        source_url = capture.get("source_url", "")
+        auto_title = ""
+        if not title or title.strip() == "":
+            auto_title = self.nlp.generate_auto_title(
+                nlp_result, markdown=markdown, source_url=source_url,
+            )
+            logger.info("Auto-title generated: '%s'", auto_title)
+
+        # ---- Pramāṇa epistemic classification ----
+        content_type = capture.get("content_type", "")
+        epistemic_type = self.nlp.classify_epistemic_type(
+            source_url=source_url,
+            user_note=user_note,
+            content_type=content_type,
+            has_markdown=bool(markdown and len(markdown) > 10),
+        )
+        logger.info("Epistemic type: %s", epistemic_type)
+
         # ---- Build persist record ----
         import json as _json  # already imported at top but alias for clarity
 
@@ -285,6 +305,9 @@ class InferenceEngine:
             **capture,
             "capture_id": capture_id,
             "timestamp": capture.get("timestamp", time.time()),
+            "title": title if title else None,
+            "auto_title": auto_title if auto_title else None,
+            "epistemic_type": epistemic_type,
             "keywords_json": json.dumps(nlp_result.get("keywords_yake", [])),
             "entities_json": json.dumps(nlp_result.get("named_entities", [])),
             "noun_phrases_json": json.dumps(nlp_result.get("noun_phrases", [])),
@@ -299,8 +322,9 @@ class InferenceEngine:
         try:
             self.storage.save_capture(record)
             logger.info(
-                "Capture %s saved. PE=%.3f reliability=%.2f emphasis=%.2f",
+                "Capture %s saved. PE=%.3f reliability=%.2f emphasis=%.2f type=%s title='%s'",
                 capture_id, pe_score, reliability, emphasis,
+                epistemic_type, title or auto_title,
             )
         except Exception as exc:  # noqa: BLE001
             logger.error("save_capture failed: %s", exc)

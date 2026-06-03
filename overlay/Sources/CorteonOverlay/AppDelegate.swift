@@ -46,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var wsClient: WebSocketClient!
     var ghostPanel: GhostPanel?
     var marginPanel: GhostPanel?
+    let screenCaptureManager = ScreenCaptureManager()
 
     // Track the currently displayed capture confirmation, if any
     private var activeCaptureId: String?
@@ -98,6 +99,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.handleResuface(data)
             case "Toast":
                 self?.handleToast(data)
+            case "ScreenCaptureRequest":
+                self?.handleScreenCaptureRequest()
             default:
                 NSLog("[CorteonOverlay] Unknown message type: \(envelope.type)")
                 break
@@ -172,6 +175,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         process.arguments = ["-e", script]
         try? process.run()
+    }
+
+    private func handleScreenCaptureRequest() {
+        NSLog("[CorteonOverlay] ScreenCaptureRequest received — starting capture + OCR")
+
+        screenCaptureManager.captureAndOCR { [weak self] ocrText, metadata in
+            guard let self = self else { return }
+
+            let iso8601 = ISO8601DateFormatter()
+            iso8601.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let timestamp = iso8601.string(from: Date())
+
+            // Build the ScreenCaptureResult message matching the Rust UIToDaemon enum
+            let result: [String: Any] = [
+                "type": "ScreenCaptureResult",
+                "payload": [
+                    "ocr_text": ocrText,
+                    "app_name": metadata.appName,
+                    "window_title": metadata.windowTitle,
+                    "timestamp": timestamp
+                ]
+            ]
+
+            guard let data = try? JSONSerialization.data(withJSONObject: result) else {
+                NSLog("[CorteonOverlay] Failed to serialize ScreenCaptureResult")
+                return
+            }
+
+            NSLog("[CorteonOverlay] ScreenCaptureResult: app=\(metadata.appName) title=\(metadata.windowTitle) ocrLen=\(ocrText.count)")
+            self.wsClient.send(data)
+        }
     }
 
     // MARK: - Outbound IPC
