@@ -353,6 +353,19 @@
     </div>
   </div>
 
+  <!-- PDF / System Page Tip Card (hidden by default) -->
+  <div id="tipCard" style="margin: 12px 16px 0; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius); padding: 11px 14px; display: none;">
+    <div style="display: flex; gap: 8px; align-items: flex-start;">
+      <span style="color: var(--accent); font-size: 14px;">💡</span>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-weight: 600; color: #fff; font-size: 12px;" id="tipTitle">Restricted Page Type</span>
+        <span style="color: var(--text-muted); font-size: 11px; line-height: 1.4;" id="tipDesc">
+          Chrome restricts content scripts on PDFs and system pages. Use <b style="color: var(--accent); font-family: monospace;">Cmd+Shift+K</b> for native Screen OCR!
+        </span>
+      </div>
+    </div>
+  </div>
+
   <!-- Hotkey hint -->
   <div class="hotkey-section">
     <span class="hotkey-label">Capture shortcut</span>

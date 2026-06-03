@@ -1,0 +1,27 @@
+# Virtual environments
+.venv/
+inference/venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Rust build target
+daemon/target/
+
+# Node packages and build outputs
+node_modules/
+dashboard/node_modules/
+dashboard/dist/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# App databases & temporary files
+.corteon/
+corteon.db
+corteon.db-shm
+corteon.db-wal
+/tmp/corteon-*.log

@@ -26,7 +26,7 @@ storage = CorteonStorage()
 # ---------------------------------------------------------------------------
 # Precision threshold for graph edges (Active Inference precision weighting)
 # ---------------------------------------------------------------------------
-SIMILARITY_THRESHOLD = 0.72
+SIMILARITY_THRESHOLD = 0.82
 
 
 @app.get("/api/captures")
@@ -50,6 +50,21 @@ def get_captures() -> List[Dict[str, Any]]:
     return result
 
 
+class NoteUpdate(BaseModel):
+    user_note: str
+
+
+@app.post("/api/captures/{capture_id}/note")
+def update_capture_note(capture_id: str, note_data: NoteUpdate):
+    """Updates the user note for a specific capture."""
+    with storage.conn:
+        storage.conn.execute(
+            "UPDATE captures SET user_note = ? WHERE capture_id = ?",
+            (note_data.user_note, capture_id)
+        )
+    return {"success": True}
+
+
 def _compute_edge_label(kw_a: list, kw_b: list) -> str:
     """Find shared keywords between two captures to label the edge."""
     if not kw_a or not kw_b:
@@ -63,12 +78,12 @@ def _compute_edge_label(kw_a: list, kw_b: list) -> str:
 
 
 @app.get("/api/graph")
-def get_graph() -> Dict[str, Any]:
+def get_graph(threshold: float = 0.82) -> Dict[str, Any]:
     """
     Returns graph data: nodes (captures) and links (similarities > threshold).
     
     Nodes include Pramāṇa epistemic_type and auto-generated titles.
-    Edges are precision-thresholded at SIMILARITY_THRESHOLD and labeled
+    Edges are precision-thresholded at the provided threshold and labeled
     with shared keywords where available.
     """
     captures = get_captures()
@@ -116,7 +131,7 @@ def get_graph() -> Dict[str, Any]:
             id1 = capture_ids[i]
             id2 = capture_ids[j]
             sim = _cosine_similarity(emb_dict[id1], emb_dict[id2])
-            if sim > SIMILARITY_THRESHOLD:
+            if sim > threshold:
                 label = _compute_edge_label(
                     kw_map.get(id1, []),
                     kw_map.get(id2, [])
@@ -132,7 +147,7 @@ def get_graph() -> Dict[str, Any]:
         "nodes": nodes,
         "links": links,
         "meta": {
-            "threshold": SIMILARITY_THRESHOLD,
+            "threshold": threshold,
             "node_count": len(nodes),
             "edge_count": len(links),
         }

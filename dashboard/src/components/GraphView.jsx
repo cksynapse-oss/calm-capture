@@ -23,7 +23,7 @@ const PRAMANA_GLOW = {
   upamana:   'rgba(168, 85, 247, 0.35)',
 };
 
-export default function GraphView({ graphData }) {
+export default function GraphView({ graphData, threshold, onThresholdChange, onNodeSelect }) {
   const fgRef = useRef();
   const [dimensions, setDimensions] = useState({ width: window.innerWidth - 280, height: window.innerHeight });
 
@@ -105,8 +105,6 @@ export default function GraphView({ graphData }) {
     ctx.fillText(link.label, midX, midY - fontSize);
   };
 
-  const meta = graphData.meta || {};
-
   return (
     <div className="graph-container">
       <ForceGraph2D
@@ -125,7 +123,10 @@ export default function GraphView({ graphData }) {
         cooldownTicks={100}
         onNodeClick={node => {
           fgRef.current.centerAt(node.x, node.y, 1000);
-          fgRef.current.zoom(2, 2000);
+          fgRef.current.zoom(2.5, 2000);
+          if (onNodeSelect) {
+            onNodeSelect(node.id);
+          }
         }}
       />
 
@@ -140,21 +141,26 @@ export default function GraphView({ graphData }) {
         ))}
       </div>
 
-      {/* Meta info */}
-      <div className="glass-panel graph-meta">
-        <span className="threshold-label">Threshold: {(meta.threshold || 0.72).toFixed(2)}</span>
-        <span> · {meta.edge_count || graphData.links.length} edges</span>
-      </div>
-
-      {/* Stats overlay */}
-      <div className="glass-panel graph-overlay">
-        <div className="stat-item">
-          <span className="stat-value">{graphData.nodes.length}</span>
-          <span className="stat-label">Nodes</span>
+      {/* Meta info with slider */}
+      <div className="glass-panel graph-meta" style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '220px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: '600', fontSize: '12px', color: 'var(--text-primary)' }}>Precision Weighting</span>
+          <span style={{ fontSize: '11px', fontFamily: 'monospace', background: 'rgba(255,255,255,0.08)', padding: '1px 5px', borderRadius: '3px', color: 'var(--accent-color)' }}>
+            {threshold.toFixed(2)}
+          </span>
         </div>
-        <div className="stat-item">
-          <span className="stat-value">{graphData.links.length}</span>
-          <span className="stat-label">Connections</span>
+        <input 
+          type="range" 
+          min="0.75" 
+          max="0.95" 
+          step="0.01" 
+          value={threshold} 
+          onChange={(e) => onThresholdChange(parseFloat(e.target.value))}
+          style={{ width: '100%', accentColor: 'var(--accent-color)', cursor: 'pointer', margin: '4px 0' }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)' }}>
+          <span>{graphData.nodes.length} nodes</span>
+          <span>{graphData.links.length} edges</span>
         </div>
       </div>
     </div>

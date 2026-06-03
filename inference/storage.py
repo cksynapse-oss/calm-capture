@@ -191,6 +191,8 @@ class CorteonStorage:
         migrations = [
             ("captures", "auto_title", "TEXT"),
             ("captures", "epistemic_type", "TEXT DEFAULT 'pratyaksa'"),
+            ("captures", "content_markdown", "TEXT"),
+            ("captures", "excerpt", "TEXT"),
         ]
         for table, column, col_type in migrations:
             try:
@@ -230,7 +232,7 @@ class CorteonStorage:
         capture_columns = {
             "capture_id", "timestamp", "source_url", "title", "auto_title",
             "user_note", "domain", "author", "word_count", "content_type",
-            "epistemic_type", "markdown_path",
+            "epistemic_type", "markdown_path", "content_markdown", "excerpt",
             "keywords_json", "entities_json", "noun_phrases_json", "concepts_json",
             "one_sentence_summary", "prediction_error_score", "semantic_novelty",
             "user_emphasis", "source_reliability", "topic_cluster_id",

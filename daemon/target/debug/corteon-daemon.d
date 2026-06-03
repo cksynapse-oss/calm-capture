@@ -1,1 +1,0 @@
-/Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/target/debug/corteon-daemon: /Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/src/ipc.rs /Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/src/main.rs /Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/src/storage.rs

@@ -100,6 +100,7 @@ REGISTRATION_FRAME = '{"path":"/inference"}'  # First frame to send after connec
 CONTEXT_LOOP_INTERVAL = 5.0          # seconds between context polls
 MAX_RESURFACE_CANDIDATES = 5
 RECONNECT_DELAY = 3.0                # seconds before retrying after disconnect
+RESURFACE_COOLDOWN = 60.0            # seconds to wait before allowing another resurface popup
 
 
 # ---------------------------------------------------------------------------
@@ -137,6 +138,8 @@ class InferenceEngine:
             "inferred_topic": 0,
             "inferred_need": "Idle",
         }
+
+        self._last_resurface_time = 0.0
 
         logger.info("InferenceEngine ready.")
 
@@ -308,6 +311,8 @@ class InferenceEngine:
             "title": title if title else None,
             "auto_title": auto_title if auto_title else None,
             "epistemic_type": epistemic_type,
+            "content_markdown": markdown,
+            "excerpt": capture.get("excerpt") or (markdown[:200] if markdown else ""),
             "keywords_json": json.dumps(nlp_result.get("keywords_yake", [])),
             "entities_json": json.dumps(nlp_result.get("named_entities", [])),
             "noun_phrases_json": json.dumps(nlp_result.get("noun_phrases", [])),
@@ -437,6 +442,15 @@ class InferenceEngine:
         if resurface_action == 0:
             return  # agent decided not to resurface anything
 
+        # Cooldown check to prevent overlay flickering repeatedly
+        now = time.time()
+        if now - self._last_resurface_time < RESURFACE_COOLDOWN:
+            logger.debug(
+                "Resurfacing suppressed due to cooldown (%.1fs remaining)",
+                RESURFACE_COOLDOWN - (now - self._last_resurface_time)
+            )
+            return
+
         # Fetch resurface candidates
         try:
             context_embedding = obs_dict.get("context_embedding")
@@ -493,13 +507,15 @@ class InferenceEngine:
         # Send ResurfaceSignal to daemon (daemon relays to UI)
         # Use the Rust serde(tag,content) format: {type, payload}
         top = safe_candidates[0]
+        title = top.get("title") or top.get("auto_title") or top.get("source_url") or "Captured Note"
+        excerpt = top.get("one_sentence_summary") or top.get("excerpt") or ""
         msg = {
             "type": "ResurfaceSignal",
             "payload": {
                 "capture_id":      top["capture_id"],
-                "title":           top["title"],
-                "excerpt":         top.get("one_sentence_summary", ""),
-                "user_note":       None,
+                "title":           title,
+                "excerpt":         excerpt,
+                "user_note":       top.get("user_note"),
                 "relevance_score": float(top.get("score", 0.0)),
                 "efe_score":       0.0,
                 "display_intensity": float(display_intensity),
@@ -507,6 +523,7 @@ class InferenceEngine:
             },
         }
         await self._send(ws, msg)
+        self._last_resurface_time = now
         logger.info(
             "ResurfaceSignal sent to daemon: action=%d display=%d %d candidates",
             resurface_action, display_intensity, len(safe_candidates),

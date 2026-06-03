@@ -1,4 +1,4 @@
-export default function ListView({ captures }) {
+export default function ListView({ captures, onCaptureClick }) {
   if (!captures || captures.length === 0) {
     return (
       <div className="list-container">
@@ -35,7 +35,12 @@ export default function ListView({ captures }) {
           const displayTitle = cap.title || cap.auto_title || cap.source_url || 'Captured Note';
           
           return (
-            <div key={cap.capture_id} className={`glass-panel capture-card epistemic-${epistemicType}`}>
+            <div 
+              key={cap.capture_id} 
+              className={`glass-panel capture-card epistemic-${epistemicType}`}
+              onClick={() => onCaptureClick(cap)}
+              style={{ cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div className="card-domain">{cap.domain || 'SYSTEM'}</div>
                 <span className={`pramana-badge ${epistemicType}`}>{epistemicType}</span>

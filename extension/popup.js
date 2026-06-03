@@ -130,6 +130,44 @@ async function fetchStatus() {
 async function refreshStatus() {
   const status = await fetchStatus();
   renderStatus(status.nativeConnected, status.lastTabContext?.url || '');
+  checkTabType();
+}
+
+/**
+ * Inspect the active tab to show helper tips if Chrome restrictions block content script scraping (e.g. PDFs, system pages).
+ */
+function checkTabType() {
+  try {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (chrome.runtime.lastError || !tabs || tabs.length === 0) return;
+      const activeTab = tabs[0];
+      if (!activeTab || !activeTab.url) return;
+
+      const url = activeTab.url.toLowerCase();
+      const isPDF = url.endsWith('.pdf') || url.includes('.pdf?') || url.includes('/pdf/') || (url.startsWith('chrome-extension://') && url.includes('pdf'));
+      const isRestricted = url.startsWith('chrome://') || (url.startsWith('chrome-extension://') && !url.includes('pdf')) || url.startsWith('edge://') || url.startsWith('about:');
+
+      const tipCard = document.getElementById('tipCard');
+      const tipTitle = document.getElementById('tipTitle');
+      const tipDesc = document.getElementById('tipDesc');
+
+      if (tipCard) {
+        if (isPDF || isRestricted) {
+          tipCard.style.display = 'block';
+          if (tipTitle) {
+            tipTitle.textContent = isPDF ? 'PDF Document Detected' : 'System Page Restricted';
+          }
+          if (tipDesc) {
+            tipDesc.innerHTML = isPDF
+              ? `Chrome blocks extension scripts on PDFs. Use <b style="color: var(--accent); font-family: monospace;">Cmd+Shift+K</b> to capture with native Screen OCR!`
+              : `Chrome restricts scripts on system pages. Use <b style="color: var(--accent); font-family: monospace;">Cmd+Shift+K</b> to capture with native Screen OCR!`;
+          }
+        } else {
+          tipCard.style.display = 'none';
+        }
+      }
+    });
+  } catch (_) {}
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -210,3 +248,4 @@ renderStatus(false, '');
 statusSub.textContent = 'Checking daemon…';
 
 refreshStatus();
+checkTabType();
