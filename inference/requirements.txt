@@ -1,0 +1,7 @@
+pymdp
+sentence-transformers
+yake
+spacy
+websockets
+numpy
+scipy

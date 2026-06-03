@@ -1,0 +1,47 @@
+{
+  "": {
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/master.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/AppDelegate.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/CapturePopoverView.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/GhostNotificationView.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/GhostPanel.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/MarginOverlayView.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/WebSocketClient.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swiftdeps"
+  },
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/main.swift": {
+    "dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.d",
+    "object": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.swift.o",
+    "swiftmodule": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.swiftdeps"
+  }
+}

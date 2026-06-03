@@ -1,0 +1,81 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "CorteonOverlay-arm64-apple-macosx15.0-debug.exe": ["<CorteonOverlay-arm64-apple-macosx15.0-debug.exe>"]
+  "CorteonOverlay-arm64-apple-macosx15.0-debug.module": ["<CorteonOverlay-arm64-apple-macosx15.0-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<CorteonOverlay-arm64-apple-macosx15.0-debug.exe>","<CorteonOverlay-arm64-apple-macosx15.0-debug.module>"]
+  "test": ["<CorteonOverlay-arm64-apple-macosx15.0-debug.exe>","<CorteonOverlay-arm64-apple-macosx15.0-debug.module>"]
+default: "main"
+nodes:
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay":
+    is-mutated: true
+commands:
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay-entitlement.plist":
+    tool: write-auxiliary-file
+    inputs: ["<entitlement-plist>","<com.apple.security.get-task-allow>"]
+    outputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay-entitlement.plist"]
+    description: "Write auxiliary file /Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay-entitlement.plist"
+
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/AppDelegate.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/CapturePopoverView.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/GhostNotificationView.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/GhostPanel.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/MarginOverlayView.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/WebSocketClient.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/main.swift"]
+    outputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/sources"]
+    description: "Write auxiliary file /Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/sources"
+
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.swift.o"]
+    outputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.product/Objects.LinkFileList"
+
+  "/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Library/Developer/CommandLineTools/usr/bin/swiftc"]
+    outputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+
+  "<CorteonOverlay-arm64-apple-macosx15.0-debug.exe>":
+    tool: phony
+    inputs: ["<CorteonOverlay-arm64-apple-macosx15.0-debug.exe-CodeSigning>"]
+    outputs: ["<CorteonOverlay-arm64-apple-macosx15.0-debug.exe>"]
+
+  "<CorteonOverlay-arm64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/Modules/CorteonOverlay.swiftmodule"]
+    outputs: ["<CorteonOverlay-arm64-apple-macosx15.0-debug.module>"]
+
+  "C.CorteonOverlay-arm64-apple-macosx15.0-debug.exe":
+    tool: shell
+    inputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.product/Objects.LinkFileList"]
+    outputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/CorteonOverlay"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-L","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug","-o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay","-module-name","CorteonOverlay","-Xlinker","-no_warn_duplicate_libraries","-emit-executable","-Xlinker","-alias","-Xlinker","_CorteonOverlay_main","-Xlinker","_main","-Xlinker","-rpath","-Xlinker","@loader_path","@/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.product/Objects.LinkFileList","-target","arm64-apple-macosx13.0","-Xlinker","-add_ast_path","-Xlinker","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/Modules/CorteonOverlay.swiftmodule","-F","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xlinker","-rpath","-Xlinker","/Library/Developer/CommandLineTools/Library/Developer/Frameworks"]
+
+  "C.CorteonOverlay-arm64-apple-macosx15.0-debug.exe-entitlements":
+    tool: shell
+    inputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay-entitlement.plist"]
+    outputs: ["<CorteonOverlay-arm64-apple-macosx15.0-debug.exe-CodeSigning>"]
+    description: "Applying debug entitlements to ./.build/arm64-apple-macosx/debug/CorteonOverlay"
+    args: ["codesign","--force","--sign","-","--entitlements","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay-entitlement.plist","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay"]
+
+  "C.CorteonOverlay-arm64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/AppDelegate.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/CapturePopoverView.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/GhostNotificationView.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/GhostPanel.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/MarginOverlayView.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/WebSocketClient.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/main.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/sources"]
+    outputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/AppDelegate.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/CapturePopoverView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostNotificationView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/GhostPanel.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/MarginOverlayView.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/WebSocketClient.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/main.swift.o","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/Modules/CorteonOverlay.swiftmodule"]
+    description: "Compiling Swift Module 'CorteonOverlay' (7 sources)"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-module-name","CorteonOverlay","-emit-dependencies","-emit-module","-emit-module-path","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/Modules/CorteonOverlay.swiftmodule","-output-file-map","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/output-file-map.json","-incremental","-c","@/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/CorteonOverlay.build/sources","-I","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx13.0","-enable-batch-mode","-index-store-path","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j8","-DSWIFT_PACKAGE","-DDEBUG","-module-cache-path","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-entry-point-function-name","-Xfrontend","CorteonOverlay_main","-swift-version","5","-F","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xcc","-isysroot","-Xcc","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-Xcc","-fPIC","-Xcc","-g"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Sources/CorteonOverlay/","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Package.swift","/Users/hahaha/Desktop/untitled folder/calm-capture/overlay/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

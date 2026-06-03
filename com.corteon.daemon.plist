@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    com.corteon.daemon.plist
+    LaunchAgent for the Calm Capture Rust daemon.
+
+    IMPORTANT: install.sh patches the literal string CORTEON_DAEMON_PATH with
+    the actual binary path before copying this file to ~/Library/LaunchAgents/.
+    Do not load this file directly without running install.sh first.
+-->
+<plist version="1.0">
+<dict>
+    <!-- Unique label for launchd -->
+    <key>Label</key>
+    <string>com.corteon.daemon</string>
+
+    <!--
+        ProgramArguments: the first element must be the absolute path to the
+        compiled daemon binary.  install.sh substitutes CORTEON_DAEMON_PATH.
+    -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>CORTEON_DAEMON_PATH</string>
+    </array>
+
+    <!-- Start immediately when the agent is loaded -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart the daemon if it exits for any reason -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Run as a low-priority background process -->
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <!-- Reduce I/O priority so we don't interfere with foreground apps -->
+    <key>LowPriorityBackgroundIO</key>
+    <true/>
+
+    <!-- Unified log file – both stdout and stderr go here -->
+    <key>StandardOutPath</key>
+    <string>/tmp/corteon-daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/corteon-daemon.log</string>
+
+    <!-- Throttle rapid restart loops (seconds) -->
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+</dict>
+</plist>

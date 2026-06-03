@@ -1,0 +1,14 @@
+/Users/hahaha/Desktop/untitled folder/calm-capture/daemon/target/release/deps/serde-0574e7a3104a453e.d: /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/target/release/build/serde-5e17367d8685998c/out/private.rs
+
+/Users/hahaha/Desktop/untitled folder/calm-capture/daemon/target/release/deps/libserde-0574e7a3104a453e.rlib: /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/target/release/build/serde-5e17367d8685998c/out/private.rs
+
+/Users/hahaha/Desktop/untitled folder/calm-capture/daemon/target/release/deps/libserde-0574e7a3104a453e.rmeta: /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/target/release/build/serde-5e17367d8685998c/out/private.rs
+
+/Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/hahaha/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/hahaha/Desktop/untitled\ folder/calm-capture/daemon/target/release/build/serde-5e17367d8685998c/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/hahaha/Desktop/untitled folder/calm-capture/daemon/target/release/build/serde-5e17367d8685998c/out

@@ -1,0 +1,9 @@
+{
+  "name": "com.corteon.capture",
+  "description": "Calm Capture – Native Messaging host for page content extraction",
+  "path": "NM_HOST_BINARY_PATH",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://plhjipedckejfancfbcpmofobhpblefl/"
+  ]
+}
