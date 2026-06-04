@@ -25,3 +25,9 @@ corteon.db
 corteon.db-shm
 corteon.db-wal
 /tmp/corteon-*.log
+
+# Vite cache
+dashboard/.vite/
+
+# Swift build artifacts
+overlay/.build/

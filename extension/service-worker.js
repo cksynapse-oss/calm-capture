@@ -129,6 +129,12 @@ function sendToNative(payload) {
     return false;
   }
   try {
+    console.log('[CalmCapture SERVICE-WORKER] sendToNative calling postMessage with payload:', {
+      type: payload.type,
+      payloadKeys: payload.payload ? Object.keys(payload.payload) : [],
+      payloadTitle: payload.payload ? payload.payload.title : null,
+      payloadMarkdownLength: (payload.payload && payload.payload.content_markdown) ? payload.payload.content_markdown.length : 0
+    });
     nativePort.postMessage(payload);
     return true;
   } catch (err) {
@@ -273,8 +279,7 @@ async function captureActiveTab() {
     return;
   }
 
-  // Relay to native host
-  sendToNative({
+  const capturePayload = {
     type: 'CaptureResult',
     payload: {
       capture_id: crypto.randomUUID(),
@@ -286,7 +291,12 @@ async function captureActiveTab() {
       word_count: result.word_count,
       timestamp: new Date().toISOString()
     }
-  });
+  };
+
+  console.log('[CalmCapture SERVICE-WORKER] Payload prepared for native host:', JSON.stringify(capturePayload, null, 2));
+
+  // Relay to native host
+  sendToNative(capturePayload);
 
   console.log('[CalmCapture] Capture relayed to native host:', result.title);
 }

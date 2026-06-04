@@ -56,12 +56,40 @@ class NoteUpdate(BaseModel):
 
 @app.post("/api/captures/{capture_id}/note")
 def update_capture_note(capture_id: str, note_data: NoteUpdate):
-    """Updates the user note for a specific capture."""
+    """Updates the user note for a specific capture and syncs with Obsidian."""
     with storage.conn:
         storage.conn.execute(
             "UPDATE captures SET user_note = ? WHERE capture_id = ?",
             (note_data.user_note, capture_id)
         )
+        
+    # Re-export to Obsidian
+    try:
+        from obsidian_exporter import export_to_obsidian
+        from storage import _blob_to_array
+        
+        # Fetch the updated capture record
+        row = storage.conn.execute("SELECT * FROM captures WHERE capture_id = ?", (capture_id,)).fetchone()
+        if row:
+            record = dict(row)
+            # Fetch embedding
+            emb_row = storage.conn.execute("SELECT embedding FROM embeddings WHERE capture_id = ?", (capture_id,)).fetchone()
+            if emb_row:
+                emb = _blob_to_array(emb_row["embedding"])
+                record["embedding"] = emb
+                
+                # Query similarity graph matches
+                similar_candidates = storage.find_similar_captures(emb, limit=10)
+                strong_matches = [
+                    c for c in similar_candidates 
+                    if c.get("score", 0.0) > 0.82 and c.get("capture_id") != capture_id
+                ]
+                
+                # Export updated markdown file
+                export_to_obsidian(record, strong_matches)
+    except Exception as e:
+        logger.warning("Failed to re-export note update to Obsidian: %s", e)
+        
     return {"success": True}
 
 

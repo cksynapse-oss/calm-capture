@@ -363,9 +363,9 @@ class Tier1Processor:
     # Auto-title generation (eliminates "Untitled" records)
     # ------------------------------------------------------------------
 
-    @staticmethod
     def generate_auto_title(
-        nlp_result: Dict[str, Any],
+        self,
+        nlp_result: Optional[Dict[str, Any]],
         markdown: str = "",
         source_url: str = "",
     ) -> str:
@@ -373,23 +373,46 @@ class Tier1Processor:
         Generate a 2–3 word semantic header when no user-defined title exists.
 
         Priority chain:
-          1. Named entity of type ORG, PERSON, WORK_OF_ART, EVENT, GPE
-          2. Top-ranked YAKE keyword
-          3. First meaningful noun phrase
-          4. Domain from source URL
-          5. First 4 words of content
+          1. Named entity of type ORG, PERSON, WORK_OF_ART, EVENT, GPE, PRODUCT, LAW
+          2. Any non-numeric named entity
+          3. Top-ranked YAKE keyword (> 2 chars)
+          4. First meaningful noun phrase (> 3 chars)
+          5. Domain from source URL
+          6. First 4 words of content
+          7. "Captured Note"
         """
-        # Priority 1: Named entities (most specific)
+        # Ensure we have a valid nlp_result with keywords/entities if markdown content is valid
+        if not nlp_result or not nlp_result.get("keywords_yake") or not nlp_result.get("named_entities"):
+            if markdown and markdown.strip():
+                try:
+                    nlp_result = self.process(markdown)
+                except Exception as exc:
+                    logger.warning("Failed to process markdown inside generate_auto_title: %s", exc)
+
+        if not nlp_result:
+            nlp_result = {}
+
+        # Priority 1: Named entities (most specific priority labels)
         priority_labels = {"ORG", "PERSON", "WORK_OF_ART", "EVENT", "GPE", "PRODUCT", "LAW"}
-        for ent in nlp_result.get("named_entities", []):
-            if ent.get("label") in priority_labels and len(ent.get("text", "")) > 2:
-                words = ent["text"].split()[:3]
+        entities = nlp_result.get("named_entities", [])
+        for ent in entities:
+            text = ent.get("text", "") if isinstance(ent, dict) else getattr(ent, "text", "")
+            label = ent.get("label", "") if isinstance(ent, dict) else getattr(ent, "label_", "")
+            if label in priority_labels and len(text.strip()) > 2:
+                words = text.strip().split()[:3]
                 return " ".join(words).title()
 
-        # Priority 2: Top YAKE keyword
-        keywords = nlp_result.get("keywords_yake", [])
-        if keywords:
-            candidate = keywords[0].strip()
+        # Priority 1b: Fallback to any non-numeric named entity
+        for ent in entities:
+            text = ent.get("text", "") if isinstance(ent, dict) else getattr(ent, "text", "")
+            label = ent.get("label", "") if isinstance(ent, dict) else getattr(ent, "label_", "")
+            if label not in {"DATE", "TIME", "PERCENT", "MONEY", "QUANTITY", "CARDINAL", "ORDINAL"} and len(text.strip()) > 2:
+                words = text.strip().split()[:3]
+                return " ".join(words).title()
+
+        # Priority 2: Top-ranked YAKE keyword
+        for kw in nlp_result.get("keywords_yake", []):
+            candidate = kw.strip()
             if len(candidate) > 2:
                 return candidate.title()[:40]
 
@@ -443,8 +466,8 @@ class Tier1Processor:
         url = (source_url or "").strip()
         ctype = (content_type or "").strip().lower()
 
-        # Screen OCR captures are direct perception
-        if ctype == "screen_ocr":
+        # Screen OCR and clipboard captures are direct perception
+        if ctype in ("screen_ocr", "desktop_clipboard"):
             return "pratyaksa"
 
         # User-typed notes without a source URL are inferences

@@ -81,6 +81,18 @@ except ImportError as _e:
     sys.exit(1)
 
 try:
+    from clustering import run_kmeans_clustering
+except ImportError as _e:
+    logger.critical("Cannot import clustering.py: %s", _e)
+    sys.exit(1)
+
+try:
+    from obsidian_exporter import sync_all_captures_to_obsidian, export_to_obsidian
+except ImportError as _e:
+    logger.critical("Cannot import obsidian_exporter.py: %s", _e)
+    sys.exit(1)
+
+try:
     import websockets
     from websockets.server import WebSocketServerProtocol
 except ImportError:
@@ -149,6 +161,16 @@ class InferenceEngine:
 
     async def run(self) -> None:
         """Connect to the Rust daemon and process messages forever, reconnecting on disconnect."""
+        # Initial run of clustering and Obsidian sync
+        try:
+            loop = asyncio.get_event_loop()
+            logger.info("Running initial topic clustering...")
+            await loop.run_in_executor(None, run_kmeans_clustering, self.storage)
+            logger.info("Running initial Obsidian vault sync...")
+            await loop.run_in_executor(None, sync_all_captures_to_obsidian, self.storage)
+        except Exception as exc:
+            logger.warning("Failed during startup clustering/Obsidian sync: %s", exc)
+
         logger.info("Connecting to Rust daemon at %s", DAEMON_URI)
         while True:
             try:
@@ -246,46 +268,65 @@ class InferenceEngine:
         markdown = capture.pop("content_markdown", capture.pop("markdown", capture.pop("content", "")))
         user_note = capture.get("user_note", "")
         domain = capture.get("domain", "")
+        if not domain and capture.get("source_url"):
+            try:
+                from urllib.parse import urlparse
+                parsed = urlparse(capture["source_url"])
+                domain = parsed.hostname or parsed.scheme or ""
+            except Exception:
+                domain = ""
+            capture["domain"] = domain
 
-        logger.info("Processing capture %s (%d chars markdown)", capture_id, len(markdown))
+        is_empty_markdown = not markdown or not markdown.strip()
+        extraction_failed = 1 if is_empty_markdown else 0
+
+        logger.info("Processing capture %s (%d chars markdown, extraction_failed=%d)", 
+                    capture_id, len(markdown), extraction_failed)
 
         # ---- Run Tier-1 NLP ----
-        loop = asyncio.get_event_loop()
-        try:
-            nlp_result = await loop.run_in_executor(
-                None, lambda: self.nlp.process(markdown, user_note)
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.error("Tier-1 processing failed: %s", exc)
-            nlp_result = {
-                "keywords_yake": [],
-                "named_entities": [],
-                "noun_phrases": [],
-                "embedding_vector": [0.0] * 384,
-                "note_embedding": [0.0] * 384,
-            }
+        nlp_result = {
+            "keywords_yake": [],
+            "named_entities": [],
+            "noun_phrases": [],
+            "embedding_vector": [0.0] * 384,
+            "note_embedding": [0.0] * 384,
+        }
+        pe_score = 0.0
+        reliability = 0.5
+        emphasis = 0.0
 
-        # ---- Prediction-error score (semantic novelty) ----
-        embedding_vector = nlp_result.get("embedding_vector", [0.0] * 384)
-        try:
-            all_embeddings = self.storage.get_all_embeddings()
-            pe_score = await loop.run_in_executor(
-                None,
-                lambda: self.nlp.prediction_error_score(embedding_vector, all_embeddings),
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("prediction_error_score failed: %s", exc)
-            pe_score = 0.5
+        if not is_empty_markdown:
+            loop = asyncio.get_event_loop()
+            try:
+                nlp_result = await loop.run_in_executor(
+                    None, lambda: self.nlp.process(markdown, user_note)
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.error("Tier-1 processing failed: %s", exc)
 
-        # ---- Heuristic scores ----
-        reliability = self.nlp.source_reliability(domain)
-        emphasis = self.nlp.user_emphasis(user_note)
+            # ---- Prediction-error score (semantic novelty) ----
+            embedding_vector = nlp_result.get("embedding_vector", [0.0] * 384)
+            try:
+                all_embeddings = self.storage.get_all_embeddings()
+                pe_score = await loop.run_in_executor(
+                    None,
+                    lambda: self.nlp.prediction_error_score(embedding_vector, all_embeddings),
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("prediction_error_score failed: %s", exc)
+                pe_score = 0.5
+
+            # ---- Heuristic scores ----
+            reliability = self.nlp.source_reliability(domain)
+            emphasis = self.nlp.user_emphasis(user_note)
+        else:
+            emphasis = self.nlp.user_emphasis(user_note)
 
         # ---- Auto-title generation (eliminates "Untitled" records) ----
         title = capture.get("title", "")
         source_url = capture.get("source_url", "")
         auto_title = ""
-        if not title or title.strip() == "":
+        if not title or title.strip() == "" or title.strip().lower() == "untitled":
             auto_title = self.nlp.generate_auto_title(
                 nlp_result, markdown=markdown, source_url=source_url,
             )
@@ -308,7 +349,7 @@ class InferenceEngine:
             **capture,
             "capture_id": capture_id,
             "timestamp": capture.get("timestamp", time.time()),
-            "title": title if title else None,
+            "title": title if (title and title.strip() and title.strip().lower() != "untitled") else None,
             "auto_title": auto_title if auto_title else None,
             "epistemic_type": epistemic_type,
             "content_markdown": markdown,
@@ -321,7 +362,8 @@ class InferenceEngine:
             "user_emphasis": emphasis,
             "source_reliability": reliability,
             "tier1_processed_at": time.time(),
-            "embedding": np.array(embedding_vector, dtype=np.float32),
+            "embedding": np.array(nlp_result.get("embedding_vector", [0.0]*384), dtype=np.float32),
+            "extraction_failed": extraction_failed,
         }
 
         try:
@@ -331,8 +373,25 @@ class InferenceEngine:
                 capture_id, pe_score, reliability, emphasis,
                 epistemic_type, title or auto_title,
             )
+            
+            # Asynchronously update topic clustering and export to Obsidian
+            loop = asyncio.get_event_loop()
+            
+            # Re-run topic clustering
+            await loop.run_in_executor(None, run_kmeans_clustering, self.storage)
+            
+            # Find similar captures for Obsidian link mapping
+            similar_candidates = self.storage.find_similar_captures(record["embedding"], limit=10)
+            strong_matches = [
+                c for c in similar_candidates 
+                if c.get("score", 0.0) > 0.82 and c.get("capture_id") != capture_id
+            ]
+            
+            # Export to local Obsidian vault
+            await loop.run_in_executor(None, export_to_obsidian, record, strong_matches)
+            
         except Exception as exc:  # noqa: BLE001
-            logger.error("save_capture failed: %s", exc)
+            logger.error("save_capture or post-processing failed: %s", exc)
 
         await self._send(ws, {"type": "ack", "capture_id": capture_id})
 

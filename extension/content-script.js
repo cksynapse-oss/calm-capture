@@ -491,6 +491,15 @@
     // Run extraction asynchronously to not block the message channel
     Promise.resolve().then(() => {
       const result = extractPageContent();
+      console.log("[CalmCapture CONTENT-SCRIPT] Extracted content payload immediately before sending to service worker:", {
+        success: result.success,
+        title: result.title,
+        content_markdown_len: result.content_markdown ? result.content_markdown.length : 0,
+        content_markdown_preview: result.content_markdown ? result.content_markdown.substring(0, 100) : null,
+        source_url: result.source_url,
+        word_count: result.word_count,
+        full_result: result
+      });
       sendResponse(result);
     });
 

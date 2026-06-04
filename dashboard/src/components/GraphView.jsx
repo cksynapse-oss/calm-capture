@@ -43,6 +43,16 @@ export default function GraphView({ graphData, threshold, onThresholdChange, onN
     );
   }
 
+  const filteredLinks = graphData.links.filter(link => {
+    const val = typeof link.value === 'number' ? link.value : parseFloat(link.value);
+    return val >= threshold;
+  });
+
+  const filteredGraphData = {
+    nodes: graphData.nodes,
+    links: filteredLinks
+  };
+
   const getNodeColor = (node) => {
     return PRAMANA_COLORS[node.epistemic_type] || PRAMANA_COLORS.pratyaksa;
   };
@@ -111,7 +121,7 @@ export default function GraphView({ graphData, threshold, onThresholdChange, onN
         ref={fgRef}
         width={dimensions.width}
         height={dimensions.height}
-        graphData={graphData}
+        graphData={filteredGraphData}
         nodeLabel="title"
         nodeColor={getNodeColor}
         linkColor={() => 'rgba(255, 255, 255, 0.12)'}
@@ -151,16 +161,16 @@ export default function GraphView({ graphData, threshold, onThresholdChange, onN
         </div>
         <input 
           type="range" 
-          min="0.75" 
-          max="0.95" 
-          step="0.01" 
+          min="0.5" 
+          max="1.0" 
+          step="0.05" 
           value={threshold} 
           onChange={(e) => onThresholdChange(parseFloat(e.target.value))}
-          style={{ width: '100%', accentColor: 'var(--accent-color)', cursor: 'pointer', margin: '4px 0' }}
+          className="glass-slider"
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)' }}>
           <span>{graphData.nodes.length} nodes</span>
-          <span>{graphData.links.length} edges</span>
+          <span>{filteredLinks.length} edges</span>
         </div>
       </div>
     </div>

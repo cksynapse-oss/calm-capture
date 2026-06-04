@@ -167,7 +167,7 @@ pub enum UIToDaemon {
 #[serde(tag = "type", content = "payload")]
 pub enum InferenceMessage {
     /// Daemon → Inference: a new article was captured.
-    NewCapture { payload: CapturePayload },
+    NewCapture(CapturePayload),
     /// Daemon → Inference: the user switched browser tabs.
     TabContext(TabContext),
     /// Daemon → Inference: relay user feedback so the engine can update its model.
@@ -247,5 +247,9 @@ pub fn to_json<T: Serialize>(value: &T) -> String {
 
 /// Deserialize from a JSON `&str`, returning an `anyhow::Error` on failure.
 pub fn from_json<'a, T: Deserialize<'a>>(s: &'a str) -> anyhow::Result<T> {
-    serde_json::from_str(s).map_err(|e| anyhow::anyhow!("IPC deserialize error: {e}"))
+    let result = serde_json::from_str(s);
+    if let Err(ref e) = result {
+        eprintln!("ipc::from_json failed: {} | raw: {}", e, s);
+    }
+    result.map_err(|e| anyhow::anyhow!("IPC deserialize error: {e}"))
 }

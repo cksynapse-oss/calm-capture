@@ -219,9 +219,13 @@ async fn nm_socket_listener(
                         frame = read_framed(&mut stream) => {
                             match frame {
                                 Ok(Some(json)) => {
+                                    info!("Daemon Unix socket received frame (len {}): {}", json.len(), &json[..json.len().min(1000)]);
                                     match ipc::from_json::<ExtensionMessage>(&json) {
-                                        Ok(msg) => { let _ = ext_tx.send(msg).await; }
-                                        Err(e) => warn!("bad extension message: {e} | raw: {}", &json[..json.len().min(200)]),
+                                        Ok(msg) => {
+                                            info!("Deserialized ExtensionMessage successfully: {:?}", msg);
+                                            let _ = ext_tx.send(msg).await;
+                                        }
+                                        Err(e) => warn!("bad extension message: {e} | raw: {}", json),
                                     }
                                 }
                                 Ok(None) => {
@@ -346,9 +350,67 @@ async fn run_daemon(
                 info!("Hotkey triggered — sending TriggerCapture to extension");
                 let _ = daemon_to_ext_tx.send(DaemonToExtension::TriggerCapture {}).await;
             } else {
-                info!("Hotkey triggered — no NM host connected, sending ScreenCaptureRequest to overlay");
-                let scr_msg = DaemonToUI::ScreenCaptureRequest {};
-                send_to_ui(&clients, &ipc::to_json(&scr_msg)).await;
+                // Zero-permission fallback: read clipboard text
+                info!("Hotkey triggered — no NM host; attempting clipboard capture");
+                let clipboard_text = tokio::task::spawn_blocking(|| {
+                    match arboard::Clipboard::new() {
+                        Ok(mut cb) => match cb.get_text() {
+                            Ok(text) if !text.trim().is_empty() => Some(text),
+                            _ => None,
+                        },
+                        Err(e) => {
+                            tracing::warn!("Clipboard access failed: {e}");
+                            None
+                        }
+                    }
+                })
+                .await
+                .unwrap_or(None);
+
+                if let Some(text) = clipboard_text {
+                    let word_count = text.split_whitespace().count() as u32;
+                    let capture_id = uuid::Uuid::new_v4().to_string();
+                    let excerpt: String = text.chars().take(200).collect();
+                    let title_preview: String = text.lines().next().unwrap_or("Clipboard Capture").chars().take(80).collect();
+                    let timestamp = chrono::Utc::now().to_rfc3339();
+
+                    info!("Clipboard capture: {word_count} words, title='{title_preview}'");
+
+                    let payload = CapturePayload {
+                        capture_id: capture_id.clone(),
+                        title: title_preview.clone(),
+                        source_url: "clipboard://desktop".to_owned(),
+                        content_markdown: text,
+                        byline: None,
+                        excerpt: excerpt.clone(),
+                        word_count,
+                        timestamp,
+                        content_type: "desktop_clipboard".to_owned(),
+                    };
+                    let inf_msg = InferenceMessage::NewCapture(payload);
+                    send_to_inference(&clients, &ipc::to_json(&inf_msg)).await;
+
+                    // Notify UI with capture confirmation
+                    let cc = DaemonToUI::CaptureComplete(ipc::CaptureComplete {
+                        capture_id,
+                        title: title_preview,
+                        excerpt,
+                        word_count,
+                        prediction_error_score: 0.0,
+                    });
+                    send_to_ui(&clients, &ipc::to_json(&cc)).await;
+
+                    // Toast confirmation
+                    let toast = DaemonToUI::Toast(Toast {
+                        message: format!("📋 Clipboard captured ({word_count} words)"),
+                        level: "info".to_owned(),
+                    });
+                    send_to_ui(&clients, &ipc::to_json(&toast)).await;
+                } else {
+                    info!("Clipboard empty — falling back to ScreenCaptureRequest");
+                    let scr_msg = DaemonToUI::ScreenCaptureRequest {};
+                    send_to_ui(&clients, &ipc::to_json(&scr_msg)).await;
+                }
             }
         }
 
@@ -357,7 +419,8 @@ async fn run_daemon(
             Some(ext_msg) = ext_rx.recv() => {
                 match ext_msg {
                     ExtensionMessage::CaptureResult(capture) => {
-                        info!("CaptureResult received id={}", capture.capture_id);
+                        info!("CaptureResult received id={} title='{}' excerpt='{}' byline={:?} word_count={} content_markdown_len={}",
+                              capture.capture_id, capture.title, capture.excerpt, capture.byline, capture.word_count, capture.content_markdown.len());
 
                         // 1. Notify UI immediately (capture confirmation overlay)
                         let cc = DaemonToUI::CaptureComplete(ipc::CaptureComplete {
@@ -371,9 +434,9 @@ async fn run_daemon(
 
                         // 2. Send to inference engine (inference handles persistence
                         //    with its own schema — avoids schema mismatch)
-                        let inf_msg = InferenceMessage::NewCapture {
-                            payload: ipc::CapturePayload::from(&capture),
-                        };
+                        let inf_msg = InferenceMessage::NewCapture(
+                            ipc::CapturePayload::from(&capture),
+                        );
                         send_to_inference(&clients, &ipc::to_json(&inf_msg)).await;
                     }
 
@@ -470,7 +533,7 @@ async fn run_daemon(
                             timestamp: scr.timestamp.clone(),
                             content_type: "screen_ocr".to_owned(),
                         };
-                        let inf_msg = InferenceMessage::NewCapture { payload };
+                        let inf_msg = InferenceMessage::NewCapture(payload);
                         send_to_inference(&clients, &ipc::to_json(&inf_msg)).await;
 
                         // Notify UI with a capture confirmation

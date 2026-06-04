@@ -7,7 +7,7 @@ function App() {
   const [view, setView] = useState('list');
   const [captures, setCaptures] = useState([]);
   const [graphData, setGraphData] = useState(null);
-  const [threshold, setThreshold] = useState(0.82);
+  const [threshold, setThreshold] = useState(0.75);
   const [loading, setLoading] = useState(true);
   
   // Detail Modal State
@@ -32,11 +32,11 @@ function App() {
     fetchCaptures();
   }, []);
 
-  // Fetch graph data whenever threshold changes
+  // Fetch graph data once at mount with base threshold 0.5
   useEffect(() => {
     const fetchGraph = async () => {
       try {
-        const graphRes = await fetch(`http://localhost:8000/api/graph?threshold=${threshold}`);
+        const graphRes = await fetch('http://localhost:8000/api/graph?threshold=0.5');
         const gData = await graphRes.json();
         setGraphData(gData);
       } catch (err) {
@@ -44,7 +44,7 @@ function App() {
       }
     };
     fetchGraph();
-  }, [threshold]);
+  }, []);
 
   // Sync textarea text when selected capture changes
   useEffect(() => {
@@ -84,7 +84,7 @@ function App() {
         setSelectedCapture(prev => ({ ...prev, user_note: noteText }));
         
         // Refresh graph so the metadata stays in sync
-        const graphRes = await fetch(`http://localhost:8000/api/graph?threshold=${threshold}`);
+        const graphRes = await fetch('http://localhost:8000/api/graph?threshold=0.5');
         const gData = await graphRes.json();
         setGraphData(gData);
       }

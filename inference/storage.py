@@ -139,7 +139,8 @@ class CorteonStorage:
                 topic_cluster_id    INTEGER,
                 familiarity_level   INTEGER DEFAULT 0,
                 tier1_processed_at  REAL,
-                created_at          REAL NOT NULL
+                created_at          REAL NOT NULL,
+                extraction_failed   INTEGER DEFAULT 0
             )
             """,
             # ------------------------------------------------------- topic_clusters
@@ -193,6 +194,7 @@ class CorteonStorage:
             ("captures", "epistemic_type", "TEXT DEFAULT 'pratyaksa'"),
             ("captures", "content_markdown", "TEXT"),
             ("captures", "excerpt", "TEXT"),
+            ("captures", "extraction_failed", "INTEGER DEFAULT 0"),
         ]
         for table, column, col_type in migrations:
             try:
@@ -237,6 +239,7 @@ class CorteonStorage:
             "one_sentence_summary", "prediction_error_score", "semantic_novelty",
             "user_emphasis", "source_reliability", "topic_cluster_id",
             "familiarity_level", "tier1_processed_at", "created_at",
+            "extraction_failed",
         }
 
         row = {k: v for k, v in data.items() if k in capture_columns}

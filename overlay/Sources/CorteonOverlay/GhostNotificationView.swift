@@ -71,39 +71,37 @@ struct GhostNotificationView: View {
                     .foregroundColor(Color.white.opacity(0.88))
                     .lineLimit(isExpanded ? 3 : 2)
 
-                // Excerpt – only when expanded
-                if isExpanded {
+                // Excerpt – always visible (collapsed shows 2 lines, expanded shows 6 lines)
+                if !excerpt.isEmpty {
                     Text(excerpt)
                         .font(.system(size: 11))
-                        .foregroundColor(Color.white.opacity(0.55))
-                        .lineLimit(5)
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        .foregroundColor(Color.white.opacity(0.6))
+                        .lineLimit(isExpanded ? 6 : 2)
+                        .transition(.opacity)
                 }
 
                 Spacer()
             }
             .padding(14)
             .frame(width: cardWidth, height: isExpanded ? expandedHeight : collapsedHeight, alignment: .topLeading)
-
-            // Dismiss button – only when expanded
-            if isExpanded {
-                Button {
-                    fadeOut(feedback: "dismissed")
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(Color.white.opacity(0.6))
-                        .padding(8)
-                }
-                .buttonStyle(.plain)
-                .transition(.opacity)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                handleTap()
             }
+
+            // Dismiss button – always visible
+            Button {
+                fadeOut(feedback: "dismissed")
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(Color.white.opacity(0.6))
+                    .padding(12)
+            }
+            .buttonStyle(.plain)
         }
         .frame(width: cardWidth, height: isExpanded ? expandedHeight : collapsedHeight)
         .opacity(opacity)
-        .onTapGesture {
-            handleTap()
-        }
         .onAppear {
             scheduleGhostIn()
         }
@@ -115,12 +113,12 @@ struct GhostNotificationView: View {
     private func scheduleGhostIn() {
         // Fade in to ghost opacity
         withAnimation(.easeIn(duration: 0.8)) {
-            opacity = 0.25
+            opacity = 0.80
         }
 
-        // Schedule auto-dismiss after 5.8s
+        // Schedule auto-dismiss after 10.0s
         dismissTask = Task {
-            try? await Task.sleep(nanoseconds: 5_800_000_000)
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 fadeOut(feedback: "ignored")

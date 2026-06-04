@@ -116,11 +116,17 @@ async fn relay_session(socket: UnixStream) -> Result<bool> {
             result = read_framed(&mut stdin) => {
                 match result {
                     Ok(Some(body)) => {
+                        if let Ok(text) = std::str::from_utf8(&body) {
+                            eprintln!("corteon-nm-host [STDIN]: received body of length {} bytes. content: {}", body.len(), text);
+                        } else {
+                            eprintln!("corteon-nm-host [STDIN]: received body of length {} bytes (non UTF-8)", body.len());
+                        }
                         write_framed(&mut sock_write, &body).await
                             .context("writing to daemon socket")?;
                     }
                     Ok(None) => {
                         // Chrome closed stdin — we are done, do not reconnect.
+                        eprintln!("corteon-nm-host: stdin EOF");
                         return Ok(false);
                     }
                     Err(e) => {
@@ -133,12 +139,18 @@ async fn relay_session(socket: UnixStream) -> Result<bool> {
 
             // daemon socket → stdout
             Some(body) = sock_to_stdout_rx.recv() => {
+                if let Ok(text) = std::str::from_utf8(&body) {
+                    eprintln!("corteon-nm-host [STDOUT]: relaying to Chrome. content: {}", text);
+                } else {
+                    eprintln!("corteon-nm-host [STDOUT]: relaying non UTF-8 body to Chrome of length {} bytes", body.len());
+                }
                 write_framed(&mut stdout, &body).await
                     .context("writing to Chrome stdout")?;
             }
 
             // daemon socket was closed
             _ = &mut socket_done_rx => {
+                eprintln!("corteon-nm-host: daemon socket closed");
                 return Ok(true); // reconnect
             }
         }

@@ -158,7 +158,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         ghostPanel?.setContent(view)
-        ghostPanel?.setInteractive(false)
+        ghostPanel?.setInteractive(true)
         ghostPanel?.positionBottomRight()
         ghostPanel?.orderFront(nil)
     }
