@@ -242,8 +242,8 @@ async function captureActiveTab() {
       target: { tabId: tab.id },
       files: ['content-script.js'],
     });
-  } catch (_) {
-    // Already injected — ignore the error
+  } catch (err) {
+    console.warn('[CalmCapture] executeScript failed/ignored:', err);
   }
 
   // Ask content script to extract

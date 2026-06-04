@@ -16,6 +16,12 @@
 (function () {
   'use strict';
 
+  if (window.__calmCaptureInjected) {
+    console.log('[CalmCapture] Content-script already injected, skipping redundant setup.');
+    return;
+  }
+  window.__calmCaptureInjected = true;
+
   /* ─────────────────────────────────────────────────────────────────────────
    * 1. MINIMAL READABILITY-STYLE EXTRACTOR
    * ───────────────────────────────────────────────────────────────────────── */
