@@ -335,6 +335,7 @@ class _HeuristicAgent:
             "display_intensity": display_intensity,
             "inferred_topic": self._inferred_topic,
             "inferred_need": need_map[need_state],
+            "topic_entropy": 0.0,
         }
 
     def process_feedback(self, feedback_dict: Dict[str, Any]) -> None:
@@ -455,11 +456,17 @@ class CorteonAgent:
             need_labels = ["Seeking", "Processing", "Synthesizing", "Idle"]
             inferred_need = need_labels[int(np.argmax(qs[1]))]
 
+            # Compute belief entropy of the topic context (Factor 0)
+            p_topic = qs[0]
+            p_topic_safe = p_topic[p_topic > 1e-12]
+            entropy = float(-np.sum(p_topic_safe * np.log(p_topic_safe)))
+
             return {
                 "resurface_action": resurface_action,
                 "display_intensity": display_intensity,
                 "inferred_topic": inferred_topic,
                 "inferred_need": inferred_need,
+                "topic_entropy": entropy,
             }
 
         except Exception as exc:  # noqa: BLE001

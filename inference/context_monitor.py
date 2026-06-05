@@ -59,6 +59,9 @@ class ContextMonitor:
         self._last_context_text: str = ""
         self._last_context_embedding: Optional[np.ndarray] = None
 
+        # Sliding cache of recent context embeddings for redundancy filtering
+        self.recent_contexts_cache: List[np.ndarray] = []
+
     # ------------------------------------------------------------------
     # Dependency injection
     # ------------------------------------------------------------------
@@ -245,7 +248,39 @@ class ContextMonitor:
         embedding = self._embed_text(context_text)
         self._last_context_text = context_text
         self._last_context_embedding = embedding
+
+        # Push to sliding cache for redundancy filter
+        if embedding is not None:
+            is_dup = False
+            for cached in self.recent_contexts_cache:
+                if np.array_equal(embedding, cached):
+                    is_dup = True
+                    break
+            if not is_dup:
+                self.recent_contexts_cache.append(embedding)
+                if len(self.recent_contexts_cache) > 15:
+                    self.recent_contexts_cache.pop(0)
+
         return embedding
+
+    def get_redundancy_penalty(self, item_embedding: np.ndarray) -> float:
+        """Compute the maximum cosine similarity of the item to the recent context cache."""
+        if not self.recent_contexts_cache:
+            return 0.0
+
+        max_sim = 0.0
+        q_norm = np.linalg.norm(item_embedding)
+        if q_norm == 0.0:
+            return 0.0
+
+        for cached in self.recent_contexts_cache:
+            c_norm = np.linalg.norm(cached)
+            if c_norm == 0.0:
+                continue
+            sim = float(np.dot(item_embedding, cached) / (q_norm * c_norm))
+            if sim > max_sim:
+                max_sim = sim
+        return max_sim
 
     # ------------------------------------------------------------------
     # Temporal bucket

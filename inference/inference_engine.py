@@ -514,9 +514,50 @@ class InferenceEngine:
         try:
             context_embedding = obs_dict.get("context_embedding")
             if context_embedding is not None and isinstance(context_embedding, np.ndarray):
+                # Retrieve 20 candidates for ranking (retrieve-then-rank)
                 candidates = self.storage.find_similar_captures(
-                    context_embedding, limit=MAX_RESURFACE_CANDIDATES
+                    context_embedding, limit=20
                 )
+                
+                scored_candidates = []
+                for c in candidates:
+                    cid = c["capture_id"]
+                    # Get candidate embedding from storage to calculate redundancy penalty
+                    emb_row = self.storage.conn.execute(
+                        "SELECT embedding FROM embeddings WHERE capture_id = ?", (cid,)
+                    ).fetchone()
+                    
+                    penalty = 0.0
+                    if emb_row is not None:
+                        from storage import _blob_to_array
+                        candidate_emb = _blob_to_array(emb_row["embedding"])
+                        penalty = self.context_monitor.get_redundancy_penalty(candidate_emb)
+                        
+                    # Resolve need-state weights
+                    weights = {
+                        "seeking": (0.3, 0.7, 0.5),
+                        "processing": (0.8, 0.2, 0.1),
+                        "synthesizing": (0.5, 0.5, 0.3),
+                        "idle": (0.5, 0.5, 0.3),
+                    }
+                    w_sim, w_diff, w_redundancy = weights.get(
+                        inferred_need.lower().strip(), weights["synthesizing"]
+                    )
+                    
+                    # Calculate concept divergence (silo-breaking check)
+                    topic_a = inferred_topic
+                    topic_b = c.get("topic_cluster_id")
+                    divergence = 1.0 if topic_b is None or topic_a != topic_b else 0.0
+                    
+                    cosine_sim = float(c.get("score", 0.0))
+                    adaptive_score = (w_sim * cosine_sim) + (w_diff * divergence) - (w_redundancy * penalty)
+                    
+                    c["original_score"] = cosine_sim
+                    c["score"] = adaptive_score
+                    scored_candidates.append(c)
+                
+                scored_candidates.sort(key=lambda x: x["score"], reverse=True)
+                candidates = scored_candidates
             else:
                 candidates = self.storage.get_resurface_candidates(
                     topic_id=inferred_topic if inferred_topic < 8 else None,
@@ -527,6 +568,27 @@ class InferenceEngine:
             candidates = []
 
         if not candidates:
+            return
+
+        # Calculate adaptive threshold: tau_high = tau_base * (1.0 + beta * topic_entropy)
+        topic_entropy = inference_result.get("topic_entropy", 0.0)
+        tau_base = 0.45
+        beta = 0.5
+        tau_high = tau_base * (1.0 + beta * topic_entropy)
+        
+        top_cand = candidates[0]
+        top_score = float(top_cand.get("score", 0.0))
+        
+        logger.info(
+            "Top candidate adaptive score: %.3f (threshold: %.3f, entropy: %.2f)",
+            top_score, tau_high, topic_entropy
+        )
+        
+        if top_score < tau_high:
+            logger.debug(
+                "Resurfacing suppressed: top score %.3f below threshold %.3f",
+                top_score, tau_high
+            )
             return
 
         # Filter based on resurface action strategy
